@@ -1,0 +1,13 @@
+run = "docker run -d -p 8000:80 -v $PWD:/var/www/html php:apache"
+
+[workflows]
+runButton = "Run PHP Server"
+
+[[workflows.workflow]]
+name = "Run PHP Server"
+author = 41275684
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "php -S 0.0.0.0:5000 -t public/"
