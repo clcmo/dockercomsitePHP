@@ -1,5 +1,5 @@
 run = "docker run -d -p 8000:80 -v $PWD:/var/www/html php:apache"
-modules = ["php-8.1"]
+modules = ["php-8.2"]
 
 [workflows]
 runButton = "Run PHP Server"
@@ -16,3 +16,9 @@ args = "php -S 0.0.0.0:5000 -t public/"
 [[ports]]
 localPort = 5000
 externalPort = 80
+
+[deployment]
+run = ["sh", "-c", "docker run -d -p 8000:80 -v $PWD:/var/www/html php:apache"]
+
+[nix]
+channel = "stable-25_05"
