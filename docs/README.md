@@ -2,12 +2,15 @@
 
 1. Criação da Estrutura Inicial
 
+```
 Projeto/
 ├── public/           <- Diretório público da aplicação
 ├── workflow/         <- Configurações do Docker Compose
 ├── composer.json     <- Dependências PHP
 ├── Dockerfile        <- Configuração da imagem Docker
 └── .env             <- Variáveis de ambiente
+```
+
 
 2. Configuração das Dependências (composer.json)
 
