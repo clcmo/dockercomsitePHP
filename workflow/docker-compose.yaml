@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: mysql_container
+    restart: always
+    ports:
+      - "3308:3306" # Porta externa 3308 mapeada para a interna 3306
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASS} # Use a senha definida no .env
+      MYSQL_DATABASE: ${DB_NAME} # Use o nome do banco de dados definido no .env
+      MYSQL_USER: ${DB_USER} # Use o usuário definido no .env
+      MYSQL_PASSWORD: ${DB_PASS} # Use a senha definida no .env
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  app:
+    build:
+      context: .
+    container_name: app_container
+    depends_on:
+      - mysql
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+
+volumes:
+  mysql_data:
