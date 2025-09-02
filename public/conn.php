@@ -1,8 +1,8 @@
 <?php 
 
-require __DIR__ . '/../vendor/autoload.php';
+require __DIR__ . '/vendor/autoload.php';
 
-$dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../');
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/..');
 $dotenv->load();
 
 class Database {
@@ -11,21 +11,40 @@ class Database {
     private $db;
     private $user;
     private $pass;
+    private $port;
+    private $connection;
 
     public function __construct() {
 
-        $this->host = $_ENV['DB_HOST'];
-        $this->db   = $_ENV['DB_NAME'];
-        $this->user = $_ENV['DB_USER'];
-        $this->pass = $_ENV['DB_PASS'];
-
+        $this->host = $_ENV['DB_HOST'] ?? 'localhost';
+        $this->db   = $_ENV['DB_NAME'] ?? 'db_meu_projeto';
+        $this->user = $_ENV['DB_USER'] ?? 'root';
+        $this->pass = $_ENV['DB_PASS'] ?? 'root';
+        $this->port = $_ENV['DB_PORT'] ?? '3306';
 
         try {
-            $conn = new PDO("mysql:host=$this->host;dbname=$this->db", $this->user, $this->pass);
-            $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-            echo "Conexão bem-sucedida!";
+            $this->connection = new PDO("mysql:host=$this->host;port=$this->port;dbname=$this->db", $this->user, $this->pass);
+            $this->connection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         } catch (PDOException $e) {
-            echo "Erro na conexão: " . $e->getMessage();
+            $this->connection = null;
+            throw new Exception("Erro na conexão: " . $e->getMessage());
         }
+    }
+
+    public function getConnection() {
+        return $this->connection;
+    }
+
+    public function isConnected() {
+        return $this->connection !== null;
+    }
+
+    public function getConnectionInfo() {
+        return [
+            'host' => $this->host,
+            'database' => $this->db,
+            'user' => $this->user,
+            'port' => $this->port
+        ];
     }
 }

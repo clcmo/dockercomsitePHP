@@ -1,20 +1,33 @@
-# Use a PHP image with Apache
+#Usar o PHP com Apache como imagem base
 FROM php:8.2-apache
 
-# Instala extensões necessárias para MySQL
-RUN docker-php-ext-install mysqli pdo pdo_mysql
+# Instala todas as extensões necessárias do PHP
+RUN docker-php-ext-install pdo pdo_mysql mysqli
+RUN a2enmod rewrite
+RUN apt-get update && apt-get install -y libzip-dev unzip && docker-php-ext-install zip
 
-# Copia os arquivos, convertidos para o HTML, do projeto para o container
-COPY public/ /var/www/html/
-COPY vendor/ /var/www/html/vendor/
+# Define o diretório de trabalho
+WORKDIR /var/www/html
 
-# Exemplo de configuração de conexão MySQL via variáveis de ambiente, estas irão para um arquivo de ambiente
-COPY .env /var/www/html/.env
+# Instala o Composer
+RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" \
+    && php composer-setup.php --install-dir=/usr/local/bin --filename=composer \
+    && php -r "unlink('composer-setup.php');"
+# Copia os arquivos do Composer e instala as dependências
+COPY composer.json composer.lock ./
+RUN composer install --no-dev --optimize-autoloader
 
-# Define permissões
+# Copia os arquivos do projeto para o contêiner
+COPY /public/ /var/www/html/
+COPY /vendor/ /var/www/html/vendor/
+COPY .env /var/www/.env
+
+# Define as permissões corretas
 RUN chown -R www-data:www-data /var/www/html
-RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
+RUN chmod -R 755 /var/www/html
 
-# Exponha a porta padrão do Apache: 8080
-EXPOSE 8080
+# Expõe a porta 80
+EXPOSE 80
 
+# Comando para iniciar o Apache em primeiro plano
+CMD ["apache2-foreground"]
