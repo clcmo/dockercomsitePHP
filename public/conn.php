@@ -1,9 +1,12 @@
 <?php 
+// Declaração de namespace para a classe Database
+namespace App\Core;
 
-require __DIR__ . '/../vendor/autoload.php';
+require_once 'base.php';
 
-$dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/..');
-$dotenv->load();
+// Uso das globais de PDO e Exception
+use PDO;
+use Exception;
 
 class Database {
 
@@ -25,7 +28,7 @@ class Database {
         try {
             $this->connection = new PDO("mysql:host=$this->host;port=$this->port;dbname=$this->db", $this->user, $this->pass);
             $this->connection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        } catch (PDOException $e) {
+        } catch (\PDOException $e) {
             $this->connection = null;
             throw new Exception("Erro na conexão: " . $e->getMessage());
         }

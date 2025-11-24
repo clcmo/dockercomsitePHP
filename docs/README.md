@@ -36,22 +36,22 @@ Projeto/
 * Extensões: PDO, PDO MySQL, MySQLi, ZIP
 * Composer: Instalação e execução das dependências
 * Estrutura:
-    * Copia e Executa composer install
-    * Copia arquivos do projeto
-    * Define permissões corretas
+  * Copia e Executa composer install
+  * Copia arquivos do projeto
+  * Define permissões corretas
 
 6. Orquestração com Docker Compose (workflow/docker-compose.yaml)
 
 * Serviço MySQL:
-    * Imagem: MySQL 8.0
-    * Porta: 3308 externa → 3306 interna
-    * Variáveis de ambiente do Volume persistente para dados
+  * Imagem: MySQL 8.0
+  * Porta: 3308 externa → 3306 interna
+  * Variáveis de ambiente do Volume persistente para dados
 
 * Serviço App:
-    * Build do Dockerfile
-    * Dependência do MySQL
-    * Porta: 8000 externa
-    * Carrega arquivo 
+  * Build do Dockerfile
+  * Dependência do MySQL
+  * Porta: 8000 externa
+  * Carrega arquivo
 
 7. Resolução do Problema do Autoload
 
