@@ -1,10 +1,13 @@
 <?php
 
-// Incluir a classe de conexão
+// Require_Once pedirá pra que seja carregado o autoload do Composer, o Dotenv e as classes necessárias
 require_once __DIR__ . '/conn.php';
+require_once __DIR__ . '/view/user.php';
+require_once __DIR__ . '/controller/user.php';
 
-// Chama o recurso Database
+// Chama o recurso Database e da View do Usuario
 use App\Core\Database as data;
+use Views\UserView;
 
 /**
  * Verifica se o banco de dados está instalado
@@ -22,7 +25,7 @@ function isDatabaseInstalled($connection) {
 
 // Tenta conectar e verificar o estado do banco
 try {
-    $db = new data();
+    $db = new data(); // instancia a conexão com o banco de dados
     
     if (!$db->isConnected()) {
         echo "<h2>❌ Falha na conexão com o banco de dados.</h2>";
@@ -49,29 +52,30 @@ try {
         echo "<li><strong>" . ucfirst($key) . ":</strong> $value</li>";
     }
     echo "</ul>";
-    
-    // Exemplo: Buscar dados do banco
-    echo "<h3>👥 Usuários Cadastrados:</h3>";
-    $stmt = $db->getConnection()->query("SELECT id, nome, email, criado_em FROM usuarios");
-    $usuarios = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-    
-    if (count($usuarios) > 0) {
-        echo "<table border='1' cellpadding='10' style='border-collapse: collapse; width: 100%;'>";
-        echo "<tr style='background: #f0f0f0;'>";
-        echo "<th>ID</th><th>Nome</th><th>Email</th><th>Criado em</th>";
-        echo "</tr>";
-        foreach ($usuarios as $usuario) {
-            echo "<tr>";
-            echo "<td>{$usuario['id']}</td>";
-            echo "<td>{$usuario['nome']}</td>";
-            echo "<td>{$usuario['email']}</td>";
-            echo "<td>{$usuario['criado_em']}</td>";
-            echo "</tr>";
+
+    // Prepara a viewModel (callable) — tenta usar Controller\UserController se existir, senão usa query direta
+    $viewModel = function($pdo) {
+        // usar controller se disponível
+        if (class_exists('\Controller\UserController')) {
+            try {
+                $controller = new \Controller\UserController($pdo);
+                return $controller->listUsers($pdo);
+            } catch (\Throwable $e) {
+                // fallback para query direta
+                try {
+                    $stmt = $pdo->query("SELECT id, nome, email, criado_em FROM usuarios");
+                    return $stmt ? $stmt->fetchAll(\PDO::FETCH_ASSOC) : [];
+                } catch (\Exception $e) {
+                    return [];
+                }
+            }
         }
-        echo "</table>";
-    } else {
-        echo "<p>Nenhum usuário cadastrado.</p>";
-    }
+    };
+    
+    // Exemplo: Buscar dados do banco via UserView
+    echo "<h3>👥 Usuários Cadastrados (via UserView):</h3>";
+    $userView = new UserView($db->getConnection(), $viewModel);
+    $userView->getAllUsers();
     
     echo "<hr>";
     echo "<p><a href='install.php'>🔧 Reinstalar banco de dados</a></p>";
