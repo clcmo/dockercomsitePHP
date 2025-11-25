@@ -5,26 +5,53 @@ services:
     image: mysql:8.0
     container_name: mysql_container
     restart: always
-    ports:
-      - "3308:3306" # Porta externa 3308 mapeada para a interna 3306
     environment:
-      MYSQL_ROOT_PASSWORD: ${DB_PASS} # Use a senha definida no .env
-      MYSQL_DATABASE: ${DB_NAME} # Use o nome do banco de dados definido no .env
-      MYSQL_USER: ${DB_USER} # Use o usuário definido no .env
-      MYSQL_PASSWORD: ${DB_PASS} # Use a senha definida no .env
+      # IMPORTANTE: Não use MYSQL_USER com root!
+      # O root já é criado automaticamente
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-db_meu_projeto}
+      # MYSQL_USER e MYSQL_PASSWORD são para criar um usuário ADICIONAL
+      # Se quiser usar só root, deixe essas linhas comentadas
+    ports:
+      - "3308:3306"
     volumes:
       - mysql_data:/var/lib/mysql
+    networks:
+      - app-network
+    command: --default-authentication-plugin=mysql_native_password
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 30s
 
   app:
     build:
-      context: .
-    container_name: app_container
+      context: ..
+      dockerfile: Dockerfile
+    container_name: php_app
+    restart: always
     depends_on:
-      - mysql
+      mysql:
+        condition: service_healthy
     ports:
-      - "8000:8000"
-    env_file:
-      - .env
+      - "8000:80"
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: ${MYSQL_DATABASE:-db_meu_projeto}
+      DB_USER: root
+      DB_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+    networks:
+      - app-network
+    volumes:
+      - ../public:/var/www/html/public
 
 volumes:
   mysql_data:
+    driver: local
+
+networks:
+  app-network:
+    driver: bridge

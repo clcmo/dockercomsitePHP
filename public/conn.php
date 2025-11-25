@@ -1,4 +1,4 @@
-<?php 
+<?php
 // Declaração de namespace para a classe Database
 namespace App\Core;
 
@@ -8,7 +8,8 @@ require_once 'base.php';
 use PDO;
 use Exception;
 
-class Database {
+class Database
+{
 
     private $host;
     private $db;
@@ -17,16 +18,18 @@ class Database {
     private $port;
     private $connection;
 
-    public function __construct() {
+    public function __construct()
+    {
 
-        $this->host = $_ENV['DB_HOST'] ?? 'localhost';
-        $this->db   = $_ENV['DB_NAME'] ?? 'db_meu_projeto';
-        $this->user = $_ENV['DB_USER'] ?? 'root';
-        $this->pass = $_ENV['DB_PASS'] ?? 'root';
-        $this->port = $_ENV['DB_PORT'] ?? '3306';
-
+        $this->host = getenv('DB_HOST') ?: ($_ENV['DB_HOST'] ?? 'mysql');
+        $this->port = getenv('DB_PORT') ?: ($_ENV['DB_PORT'] ?? '3308');
+        $this->db = getenv('DB_NAME') ?: ($_ENV['DB_NAME'] ?? 'db_meu_projeto');
+        $this->user = getenv('DB_USER') ?: ($_ENV['DB_USER'] ?? 'root');
+        $this->pass = getenv('DB_PASS') ?: ($_ENV['DB_PASS'] ?? 'root');
+        
         try {
-            $this->connection = new PDO("mysql:host=$this->host;port=$this->port;dbname=$this->db", $this->user, $this->pass);
+            $dsn = "mysql:host={$this->host};port={$this->port};dbname={$this->db};charset=utf8mb4";
+            $this->connection = new PDO($dsn, $this->user, $this->pass);
             $this->connection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         } catch (\PDOException $e) {
             $this->connection = null;
@@ -34,15 +37,18 @@ class Database {
         }
     }
 
-    public function getConnection() {
+    public function getConnection()
+    {
         return $this->connection;
     }
 
-    public function isConnected() {
+    public function isConnected()
+    {
         return $this->connection !== null;
     }
 
-    public function getConnectionInfo() {
+    public function getConnectionInfo()
+    {
         return [
             'host' => $this->host,
             'database' => $this->db,
