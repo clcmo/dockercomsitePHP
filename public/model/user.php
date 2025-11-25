@@ -8,13 +8,16 @@ class User {
     private $name;
     private $email;
     private $password;
+
+    private $active;
     private $created_at;
 
-    public function __construct($id, $name, $email, $password, $created_at) {
+    public function __construct($id, $name, $email, $password, $active, $created_at) {
         $this->id = $id;
         $this->name = $name;
         $this->email = $email;
         $this->password = $password;
+        $this->active = $active;
         $this->created_at = $created_at;
     }
 
@@ -37,5 +40,9 @@ class User {
 
     public function getCreatedAt() {
         return $this->created_at;
+    }
+
+    public function isActive() {
+        return $this->active;
     }
 }

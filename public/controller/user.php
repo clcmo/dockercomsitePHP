@@ -25,12 +25,13 @@ class UserController {
     }
 
     // Segunda função de exemplo para adicionar um usuário
-    public function addUser($pdo, $name, $email, $password) {
+    public function addUser($pdo, $name, $email, $password, $active) {
         $senhaHash = password_hash($password, PASSWORD_DEFAULT);
-        $stmt = $pdo->prepare("INSERT INTO usuarios (nome, email, senha) VALUES (:nome, :email, :senha)");
+        $stmt = $pdo->prepare("INSERT INTO usuarios (nome, email, senha, ativo, criado_em) VALUES (:nome, :email, :senha, :ativo, :criado_em)");
         $stmt->bindParam(':nome', $name);
         $stmt->bindParam(':email', $email);
         $stmt->bindParam(':senha', $senhaHash);
+        $stmt->bindParam(':ativo', $active);
         $stmt->bindParam(':criado_em', date('Y-m-d H:i:s'));
         return $stmt->execute();
     }
@@ -60,6 +61,13 @@ class UserController {
     public function updateUserName($pdo, $userId, $newName) {
         $stmt = $pdo->prepare("UPDATE usuarios SET nome = :nome WHERE id = :id");
         $stmt->bindParam(':nome', $newName);
+        $stmt->bindParam(':id', $userId);
+        return $stmt->execute();
+    }
+
+    public function updateUserActive($pdo, $userId, $newActive) {
+        $stmt = $pdo->prepare("UPDATE usuarios SET ativo = :ativo WHERE id = :id");
+        $stmt->bindParam(':ativo', $newActive);
         $stmt->bindParam(':id', $userId);
         return $stmt->execute();
     }
